@@ -5,11 +5,12 @@ class PrimaryButton extends StatefulWidget {
     super.key,
     required this.placeHolder,
     required this.fnc,
-    required this.onPressed,
+    required this.isActive,
   });
+
   final String placeHolder;
   final VoidCallback fnc;
-  final bool onPressed;
+  final bool isActive;
 
   @override
   State<PrimaryButton> createState() => _PrimaryButtonState();
@@ -17,36 +18,28 @@ class PrimaryButton extends StatefulWidget {
 
 class _PrimaryButtonState extends State<PrimaryButton> {
   bool isHover = false;
+
   @override
   Widget build(BuildContext context) {
+    final isPressed = isHover || widget.isActive;
+
     return MouseRegion(
-      onHover: (_) => setState(() {
-        isHover = true;
-      }),
-      onExit: (_) => setState(() {
-        isHover = false;
-      }),
+      onHover: (_) => setState(() => isHover = true),
+      onExit: (_) => setState(() => isHover = false),
       child: GestureDetector(
         onTap: widget.fnc,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            border: BoxBorder.all(color: Colors.black),
-            color: isHover
-                ? Colors.black
-                : widget.onPressed
-                ? Colors.black
-                : Colors.white,
+            border: Border.all(color: Colors.black),
+            color: isPressed ? Colors.black : Colors.white,
           ),
-          padding: EdgeInsets.all(10),
           child: Text(
-            'Test Speed',
+            widget.placeHolder,
             style: TextStyle(
-              color: isHover
-                  ? Colors.white
-                  : widget.onPressed
-                  ? Colors.white
-                  : Colors.black,
+              color: isPressed ? Colors.white : Colors.black,
               fontWeight: isHover ? FontWeight.bold : FontWeight.normal,
             ),
           ),

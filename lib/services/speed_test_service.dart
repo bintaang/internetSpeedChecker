@@ -3,37 +3,32 @@ import 'package:speed_test_dart/speed_test_dart.dart';
 
 class SpeedTestService {
   bool isGettingData = false;
-  SpeedTestDart tester = SpeedTestDart();
+  final SpeedTestDart tester = SpeedTestDart();
   List<Server> bestServerList = <Server>[];
 
   Future<void> setBestServers() async {
     final settings = await tester.getSettings();
-    final List<Server> servers = settings.servers;
-    final List<Server> serverList = await tester.getBestServers(
-      servers: servers,
-    );
-    bestServerList = serverList;
+    final servers = settings.servers;
+    bestServerList = await tester.getBestServers(servers: servers);
   }
 
-  Future<SpeedInternetTypeInterface> getSpeedInternetData() async {
-    final double download = await tester.testDownloadSpeed(
-      servers: bestServerList,
-    );
-    final double upload = await tester.testUploadSpeed(servers: bestServerList);
+  Future<SpeedResult> getSpeedInternetData() async {
+    try {
+      if (bestServerList.isEmpty) await setBestServers();
 
-    return SpeedInternetTypeInterface(
-      downloadSpeed: download,
-      uploadSpeed: upload,
-    );
+      final download = await tester.testDownloadSpeed(servers: bestServerList);
+      final upload = await tester.testUploadSpeed(servers: bestServerList);
+
+      return SpeedResult(downloadSpeed: download, uploadSpeed: upload);
+    } catch (e) {
+      throw Exception('Failed to get speed data: $e');
+    }
   }
 }
 
-class SpeedInternetTypeInterface {
+class SpeedResult {
   final double downloadSpeed;
   final double uploadSpeed;
 
-  SpeedInternetTypeInterface({
-    required this.downloadSpeed,
-    required this.uploadSpeed,
-  });
+  SpeedResult({required this.downloadSpeed, required this.uploadSpeed});
 }

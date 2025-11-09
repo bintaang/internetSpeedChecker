@@ -1,11 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:speednetworkapp/services/speed_test_service.dart';
 
 class SpeedIndicator extends StatefulWidget {
   const SpeedIndicator({super.key, required this.trigger});
   final bool trigger;
+
   @override
   State<SpeedIndicator> createState() => _SpeedIndicatorState();
 }
@@ -22,7 +22,7 @@ class _SpeedIndicatorState extends State<SpeedIndicator> {
   @override
   void initState() {
     super.initState();
-    if (widget.trigger == true) {
+    if (widget.trigger) {
       getData();
     }
   }
@@ -30,7 +30,7 @@ class _SpeedIndicatorState extends State<SpeedIndicator> {
   @override
   void didUpdateWidget(SpeedIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.trigger == true && !oldWidget.trigger) {
+    if (widget.trigger && !oldWidget.trigger) {
       getData();
     }
   }
@@ -42,9 +42,12 @@ class _SpeedIndicatorState extends State<SpeedIndicator> {
         isLoading = true;
         isError = false;
         errorMessage = '';
+        speedUpload = 0.0;
+        speedDownload = 0.0;
       });
       randomNumber();
       final data = await server.getSpeedInternetData();
+      stopRandom();
       setState(() {
         server.isGettingData = false;
         speedUpload = data.uploadSpeed;
@@ -53,13 +56,21 @@ class _SpeedIndicatorState extends State<SpeedIndicator> {
       });
     } catch (e) {
       stopRandom();
+      setState(() {
+        server.isGettingData = false;
+        isLoading = false;
+        isError = true;
+        errorMessage = e.toString();
+      });
     }
   }
 
   void randomNumber() {
-    _timer = Timer.periodic(Duration(milliseconds: 100), (time) {
-      speedUpload++;
-      speedDownload++;
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+      setState(() {
+        speedUpload++;
+        speedDownload++;
+      });
     });
   }
 
@@ -68,12 +79,18 @@ class _SpeedIndicatorState extends State<SpeedIndicator> {
   }
 
   @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
           child: Text(isLoading ? 'Loading ...' : 'Done'),
         ),
         Row(
@@ -81,12 +98,15 @@ class _SpeedIndicatorState extends State<SpeedIndicator> {
           children: [
             Column(
               children: [
-                Text(speedDownload.toString()),
-                Text('Download Speed'),
+                Text(speedDownload.toStringAsFixed(2)),
+                const Text('Download Speed'),
               ],
             ),
             Column(
-              children: [Text(speedUpload.toString()), Text('Download Speed')],
+              children: [
+                Text(speedUpload.toStringAsFixed(2)),
+                const Text('Upload Speed'),
+              ],
             ),
           ],
         ),

@@ -36,17 +36,20 @@ class _SpeedTestPageState extends State<SpeedTestPage> {
           children: [
             Text("Speed Test App"),
             SpeedIndicator(trigger: isTrigger),
-            if (server.isGettingData != true)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  PrimaryButton(
-                    placeHolder: 'Test Speed',
-                    fnc: () => buttonTrigger(),
-                    onPressed: isTrigger,
-                  ),
-                ],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PrimaryButton(
+                  placeHolder: server.isGettingData != true
+                      ? 'Test Speed'
+                      : 'Testing ...',
+                  fnc: server.isGettingData != true
+                      ? () => buttonTrigger()
+                      : () => {},
+                  isActive: isTrigger,
+                ),
+              ],
+            ),
           ],
         ),
       ),
