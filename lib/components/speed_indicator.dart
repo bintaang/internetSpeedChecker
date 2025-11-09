@@ -17,14 +17,33 @@ class _SpeedIndicatorState extends State<SpeedIndicator> {
   double speedUpload = 0.0;
   double speedDownload = 0.0;
   String errorMessage = '';
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.trigger == true) {
+      getData();
+    }
+  }
+
+  @override
+  void didUpdateWidget(SpeedIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.trigger == true && !oldWidget.trigger) {
+      getData();
+    }
+  }
 
   void getData() async {
-    if (server.isGettingData == true) {
+    try {
       setState(() {
+        server.isGettingData = true;
         isLoading = true;
         isError = false;
         errorMessage = '';
       });
+      randomNumber();
       final data = await server.getSpeedInternetData();
       setState(() {
         server.isGettingData = false;
@@ -32,19 +51,20 @@ class _SpeedIndicatorState extends State<SpeedIndicator> {
         speedDownload = data.downloadSpeed;
         isLoading = false;
       });
+    } catch (e) {
+      stopRandom();
     }
   }
 
   void randomNumber() {
-    if (isLoading == true) {
-      Timer.periodic(Duration(milliseconds: 100), (time) {
-        speedUpload++;
-        speedDownload++;
-        if (isLoading == false) {
-          time.cancel();
-        }
-      });
-    }
+    _timer = Timer.periodic(Duration(milliseconds: 100), (time) {
+      speedUpload++;
+      speedDownload++;
+    });
+  }
+
+  void stopRandom() {
+    _timer?.cancel();
   }
 
   @override
