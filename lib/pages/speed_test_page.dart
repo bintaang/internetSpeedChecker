@@ -14,7 +14,6 @@ class _SpeedTestPageState extends State<SpeedTestPage> {
   bool isTrigger = false;
   void buttonTrigger() {
     setState(() {
-      server.isGettingData = true;
       isTrigger = !isTrigger;
     });
   }
@@ -40,13 +39,9 @@ class _SpeedTestPageState extends State<SpeedTestPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 PrimaryButton(
-                  placeHolder: server.isGettingData != true
-                      ? 'Test Speed'
-                      : 'Testing ...',
-                  fnc: server.isGettingData != true
-                      ? () => buttonTrigger()
-                      : () => {},
-                  isActive: isTrigger,
+                  placeHolder: 'Test Speed',
+                  fnc: buttonTrigger,
+                  onPressed: isTrigger,
                 ),
               ],
             ),
